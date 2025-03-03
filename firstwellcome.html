@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Friendship for Voon</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sriracha&display=swap');
+
+    body {
+      background-color: #fff0f5;
+      font-family: 'Sriracha', cursive;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+
+    header {
+      background-color: #ff69b4;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    main {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #post-form {
+      width: 90%;
+      max-width: 500px;
+      padding: 20px;
+      background-color: #ffe6f2;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border: 2px solid #ffb6c1;
+      text-align: center;
+    }
+
+    #post-form input,
+    #post-form textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 2px solid #ffb6c1;
+      border-radius: 10px;
+      font-family: 'Sriracha', cursive;
+      font-size: 16px;
+      background-color: #fff;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    #submit-btn {
+      background-color: #ff69b4;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: 0.3s;
+      box-shadow: 0 4px 10px rgba(255, 105, 180, 0.3);
+      font-family: 'Sriracha', cursive;
+    }
+
+    #submit-btn:hover {
+      background-color: #ff1493;
+      transform: scale(1.1);
+    }
+
+    #feed {
+      width: 90%;
+      max-width: 500px;
+      margin-top: 20px;
+    }
+
+    .post {
+      background-color: #fff;
+      border: 2px dashed #ffb6c1;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      position: relative;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .edit-btn, .save-btn {
+      background-color: #ffb6c1;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .edit-btn:hover, .save-btn:hover {
+      background-color: #ff69b4;
+    }
+
+    .history {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #ffb6c1;
+    }
+
+    .history-item {
+      font-size: 13px;
+      color: #888;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Friendship for Voon 💖
+  </header>
+  <main>
+    <div id="post-form">
+      <input type="text" id="username" placeholder="กรอกชื่อของวุ้น">
+      <textarea id="message" placeholder="เขียนความในใจ..."></textarea>
+      <button id="submit-btn">ส่งข้อความ</button>
+    </div>
+    <div id="feed">
+      <!-- โพสต์จะแสดงที่นี่ -->
+    </div>
+  </main>
+  <script>
+    // โหลดโพสต์จาก localStorage เมื่อหน้าเว็บถูกโหลด
+    function loadPosts() {
+      const posts = JSON.parse(localStorage.getItem("posts") || "[]");
+      const feed = document.getElementById('feed');
+      feed.innerHTML = "";
+      posts.forEach((postData) => {
+        const post = document.createElement('div');
+        post.classList.add('post');
+        
+        // สร้าง element สำหรับชื่อ
+        const nameTag = document.createElement('strong');
+        nameTag.innerHTML = `${postData.username} 💕`;
+        
+        // สร้าง element สำหรับข้อความ
+        const messageText = document.createElement('p');
+        messageText.innerText = postData.message;
+        messageText.contentEditable = false;
+        
+        // สร้างปุ่มแก้ไขและบันทึก
+        const editButton = document.createElement('button');
+        editButton.classList.add('edit-btn');
+        editButton.innerText = 'แก้ไข';
+  
+        const saveButton = document.createElement('button');
+        saveButton.classList.add('save-btn');
+        saveButton.innerText = 'บันทึก';
+        saveButton.style.display = 'none';
+  
+        // สร้าง element สำหรับประวัติการแก้ไข
+        const historyDiv = document.createElement('div');
+        historyDiv.classList.add('history');
+        historyDiv.innerHTML = "<strong>ประวัติการแก้ไข:</strong>";
+  
+        if (postData.history) {
+          postData.history.forEach(function(item) {
+            const historyItem = document.createElement('div');
+            historyItem.classList.add('history-item');
+            historyItem.innerText = item;
+            historyDiv.appendChild(historyItem);
+          });
+        }
+  
+        // เพิ่ม event listener ให้กับปุ่มแก้ไข
+        editButton.addEventListener('click', function() {
+          messageText.contentEditable = true;
+          messageText.focus();
+          editButton.style.display = 'none';
+          saveButton.style.display = 'inline-block';
+        });
+  
+        // เพิ่ม event listener ให้กับปุ่มบันทึก
+        saveButton.addEventListener('click', function() {
+          messageText.contentEditable = false;
+          editButton.style.display = 'inline-block';
+          saveButton.style.display = 'none';
+          const currentTime = new Date().toLocaleTimeString();
+          const newHistoryItem = `[${currentTime}] ${messageText.innerText}`;
+  
+          // อัปเดตประวัติใน localStorage
+          updatePostInLocalStorage(postData.id, messageText.innerText, newHistoryItem);
+          
+          // เพิ่มประวัติใหม่ในหน้าเว็บ
+          const historyItem = document.createElement('div');
+          historyItem.classList.add('history-item');
+          historyItem.innerText = newHistoryItem;
+          historyDiv.appendChild(historyItem);
+        });
+  
+        post.appendChild(nameTag);
+        post.appendChild(document.createElement('br'));
+        post.appendChild(messageText);
+        post.appendChild(editButton);
+        post.appendChild(saveButton);
+        post.appendChild(historyDiv);
+  
+        feed.prepend(post);
+      });
+    }
+  
+    // ฟังก์ชันอัปเดตโพสต์ใน localStorage
+    function updatePostInLocalStorage(id, newMessage, newHistoryItem) {
+      let posts = JSON.parse(localStorage.getItem("posts") || "[]");
+      posts = posts.map(post => {
+        if (post.id === id) {
+          post.message = newMessage;
+          if (!post.history) post.history = [];
+          post.history.push(newHistoryItem);
+        }
+        return post;
+      });
+      localStorage.setItem("posts", JSON.stringify(posts));
+    }
+  
+    // ฟังก์ชันเพิ่มโพสต์ใหม่ลง localStorage
+    function addPost(postData) {
+      let posts = JSON.parse(localStorage.getItem("posts") || "[]");
+      posts.push(postData);
+      localStorage.setItem("posts", JSON.stringify(posts));
+      loadPosts();
+    }
+  
+    // เมื่อคลิกปุ่มส่งข้อความ
+    document.getElementById('submit-btn').addEventListener('click', function() {
+      const username = document.getElementById('username').value || 'Anonymous';
+      const message = document.getElementById('message').value;
+      
+      if (message.trim() === '') {
+        alert('กรุณาเขียนข้อความ');
+        return;
+      }
+      
+      const id = Date.now(); // ใช้ timestamp เป็นไอดีที่ไม่ซ้ำกัน
+      const postData = {
+        id: id,
+        username: username,
+        message: message,
+        history: []
+      };
+  
+      addPost(postData);
+      
+      // เคลียร์ข้อความใน textarea หลังส่ง
+      document.getElementById('message').value = '';
+    });
+  
+    // โหลดโพสต์ทั้งหมดเมื่อหน้าเว็บถูกโหลด
+    window.onload = loadPosts;
+  </script>
+</body>
+</html>
